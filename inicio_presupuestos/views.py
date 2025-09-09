@@ -1,4 +1,6 @@
-from django.http import HttpResponse
+from django.shortcuts import render
+from .forms import PresupuestoForm
 
-def home(request):
-    return HttpResponse("Hola")
+def inicio_presupuestos(request):
+    form = PresupuestoForm()
+    return render(request, "inicio_presupuestos.html", {"form": form})
