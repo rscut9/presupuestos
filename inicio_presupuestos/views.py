@@ -4,28 +4,23 @@ from .forms import PresupuestoForm, ItemForm
 
 def inicio_presupuestos(request):
     ItemsFormSet = formset_factory(ItemForm, extra=12)
-
     if request.method == "POST":
         form = PresupuestoForm(request.POST)
         formset = ItemsFormSet(request.POST, prefix="it")
         if form.is_valid() and formset.is_valid():
-            # Cálculo de totales
             bruto = form.cleaned_data.get("precio_bruto") or 0
             iva_pct = form.cleaned_data.get("iva") or 21
             total = bruto * (1 + (iva_pct / 100))
             form.cleaned_data["precio_total"] = round(total, 2)
-
-            ctx = {
-                "form": form,
-                "formset": formset,
-                "calc_total": f"{total:.2f}",
-                "submitted": True,
-            }
+            ctx = {"form": form, "formset": formset, "calc_total": f"{total:.2f}", "submitted": True}
             return render(request, "inicio_presupuestos.html", ctx)
-
     else:
         form = PresupuestoForm()
         formset = ItemsFormSet(prefix="it")
+    return render(request, "inicio_presupuestos.html", {"form": form, "formset": formset})
 
-    ctx = {"form": form, "formset": formset}
-    return render(request, "inicio_presupuestos.html", ctx)
+def crear_material(request):
+    return render(request, "crear_material.html")
+
+def datos(request):
+    return render(request, "datos.html")

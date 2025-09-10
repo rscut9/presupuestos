@@ -75,7 +75,18 @@
 </style>
 </head>
 <body>
+    <!-- MENÚ SUPERIOR -->
+
   <div class="sheet">
+    <nav style="
+        background:#111827;color:#fff;padding:12px 18px;
+         display:flex;align-items:center;gap:16px;border-bottom:1px solid #0b1220;">
+        <a href="{% url 'inicio_presupuestos' %}" style="color:#fff;text-decoration:none;font-weight:bold;">
+            Presupuesto
+        </a>
+        <a href="{% url 'crear_material' %}" style="color:#c7d2fe;text-decoration:none;">Crear material</a>
+        <a href="{% url 'datos' %}" style="color:#c7d2fe;text-decoration:none;">Datos</a>
+    </nav>
     <form method="post">
       {% csrf_token %}
       <div class="wrap">
