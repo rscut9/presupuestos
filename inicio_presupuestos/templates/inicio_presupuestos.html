@@ -1,80 +1,191 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Formulario de Presupuestos</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f3f4f6;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
+<meta charset="UTF-8" />
+<title>Presupuesto</title>
+<style>
+  :root { --border:#2f2f2f; --soft:#dcdcdc; }
+  body{
+    margin:0; background:#f3f4f6; font-family: Arial, Helvetica, sans-serif;
+    display:flex; justify-content:center; align-items:flex-start; min-height:100vh; padding:32px;
+  }
+  .sheet{
+    width: 900px; background:#fff; border:1px solid var(--soft);
+    box-shadow:0 6px 18px rgba(0,0,0,.08); border-radius:10px; overflow:hidden;
+  }
+  .wrap{ padding:18px; }
+  .block{
+    border:2px solid var(--border); border-radius:6px; margin-bottom:14px; overflow:hidden;
+  }
+  .block .title{
+    background:#efefef; font-weight:bold; padding:8px 10px; border-bottom:2px solid var(--border);
+  }
+  .block .content{ padding:10px; }
 
-        .form-container {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            width: 400px;
-        }
+  /* Datos del cliente como líneas simples */
+  .cliente-grid{
+    display:grid; grid-template-columns: 1fr 1fr; gap:12px;
+  }
+  .field{ display:flex; flex-direction:column; }
+  .field label{ font-weight:bold; margin-bottom:6px; }
+  .field input, .field textarea{
+    border:1px solid #cfcfcf; border-radius:6px; padding:8px; font-size:14px; width:100%;
+  }
 
-        h1 {
-            text-align: center;
-            font-size: 22px;
-            margin-bottom: 20px;
-            color: #333;
-        }
+  /* Tabla materiales/cantidad */
+  table.items{
+    width:100%; border-collapse:collapse; table-layout:fixed;
+    border-left:2px solid var(--border); border-right:2px solid var(--border);
+  }
+  table.items thead th{
+    background:#efefef; border-top:2px solid var(--border);
+    border-bottom:2px solid var(--border); padding:8px; text-align:left; font-weight:bold;
+  }
+  table.items td{
+    border-bottom:1px solid var(--soft); padding:6px 8px;
+  }
+  table.items input{
+    width:100%; border:0; outline:none; font-size:14px; padding:6px 4px;
+  }
 
-        form p {
-            margin: 12px 0;
-        }
+  /* Observaciones */
+  .obs textarea{ width:100%; height:90px; }
 
-        label {
-            display: block;
-            font-weight: bold;
-            margin-bottom: 6px;
-            color: #444;
-        }
+  /* Totales (bloque pequeño alineado a la derecha) */
+  .totales-wrap{ display:flex; justify-content:flex-end; }
+  table.totales{
+    width:370px; border-collapse:collapse; margin-top:8px;
+    border:2px solid var(--border);
+  }
+  table.totales td{
+    border-bottom:1px solid var(--soft); padding:8px 10px;
+  }
+  table.totales tr:last-child td{ border-bottom:0; }
+  table.totales td.label{ font-weight:bold; width:67%; }
+  table.totales input{
+    width:100%; border:0; outline:none; text-align:right; font-weight:bold;
+  }
 
-        input {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            font-size: 14px;
-        }
-
-        button {
-            width: 100%;
-            padding: 10px;
-            margin-top: 15px;
-            background: #2563eb;
-            color: white;
-            font-weight: bold;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        button:hover {
-            background: #1e40af;
-        }
-    </style>
+  .submitbar{ padding:14px; display:flex; justify-content:flex-end; }
+  .btn{
+    background:#2563eb; color:#fff; border:0; padding:10px 16px; border-radius:8px; cursor:pointer;
+    font-weight:bold;
+  }
+  .msg{ padding:0 6px 12px 6px; color:#065f46; font-weight:bold; }
+</style>
 </head>
 <body>
-    <div class="form-container">
-        <h1>Formulario de Presupuesto</h1>
-        <form method="post">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit">Enviar</button>
-        </form>
-    </div>
+  <div class="sheet">
+    <form method="post">
+      {% csrf_token %}
+      <div class="wrap">
+
+        <!-- Datos del cliente -->
+        <div class="block">
+          <div class="title">Datos del cliente</div>
+          <div class="content cliente-grid">
+            <div class="field">
+              <label>{{ form.cliente.label }}</label>
+              {{ form.cliente }}
+            </div>
+            <div class="field">
+              <label>{{ form.calle.label }}</label>
+              {{ form.calle }}
+            </div>
+            <div class="field">
+              <label>{{ form.ciudad.label }}</label>
+              {{ form.ciudad }}
+            </div>
+            <div class="field">
+              <label>{{ form.codigo_postal.label }}</label>
+              {{ form.codigo_postal }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Descripción -->
+        <div class="block">
+          <div class="title">Descripción de la instalación</div>
+          <div class="content">
+            <div class="field">
+              <textarea name="descripcion" rows="6" placeholder="">{% if request.POST.descripcion %}{{ request.POST.descripcion }}{% endif %}</textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabla Material / Cantidad -->
+        <div class="block">
+          <table class="items">
+            <thead>
+              <tr>
+                <th>MATERIAL</th>
+                <th style="width:160px;">CANTIDAD</th>
+              </tr>
+            </thead>
+            <tbody>
+              {{ formset.management_form }}
+              {% for f in formset %}
+              <tr>
+                <td>{{ f.material }}</td>
+                <td>{{ f.cantidad }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Observaciones -->
+        <div class="block">
+          <div class="title">Observaciones</div>
+          <div class="content obs">
+            {{ form.observaciones }}
+          </div>
+        </div>
+
+        <!-- Totales alineados a la derecha -->
+        <div class="totales-wrap">
+          <table class="totales">
+            <tr>
+              <td class="label">{{ form.precio_bruto.label }}</td>
+              <td>{{ form.precio_bruto }}</td>
+            </tr>
+            <tr>
+              <td class="label">{{ form.iva.label }}</td>
+              <td>{{ form.iva }}</td>
+            </tr>
+            <tr>
+              <td class="label" style="font-size:16px;">{{ form.precio_total.label }}</td>
+              <td>{{ form.precio_total }}</td>
+            </tr>
+          </table>
+        </div>
+
+        {% if submitted %}
+          <div class="msg">Enviado. Total calculado: {{ calc_total }} €</div>
+        {% endif %}
+      </div>
+
+      <div class="submitbar">
+        <button class="btn" type="submit">Guardar / Calcular</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Cálculo en vivo en el navegador -->
+  <script>
+    const bruto = document.getElementById("id_precio_bruto");
+    const iva = document.getElementById("id_iva");
+    const total = document.getElementById("id_precio_total");
+
+    function calc() {
+      const b = parseFloat(bruto.value.replace(",", ".")) || 0;
+      const p = parseFloat(iva.value.replace(",", ".")) || 21;
+      const t = b * (1 + (p/100));
+      total.value = t.toFixed(2);
+    }
+    bruto && bruto.addEventListener("input", calc);
+    iva && iva.addEventListener("input", calc);
+    window.addEventListener("load", calc);
+  </script>
 </body>
 </html>
