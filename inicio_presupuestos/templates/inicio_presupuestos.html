@@ -165,11 +165,12 @@
               <td>{{ form.iva }}</td>
             </tr>
             <tr>
-              <td class="label" style="font-size:16px;">{{ form.precio_total.label }}</td>
+              <td class="label">{{ form.precio_total.label }}</td>
               <td>{{ form.precio_total }}</td>
             </tr>
           </table>
         </div>
+
 
         {% if submitted %}
           <div class="msg">Enviado. Total calculado: {{ calc_total }} €</div>
@@ -184,19 +185,32 @@
 
   <!-- Cálculo en vivo en el navegador -->
   <script>
-    const bruto = document.getElementById("id_precio_bruto");
-    const iva = document.getElementById("id_iva");
-    const total = document.getElementById("id_precio_total");
+    document.addEventListener("DOMContentLoaded", function () {
+      const bruto  = document.getElementById("precio_bruto");
+      const iva    = document.getElementById("iva");
+      const total  = document.getElementById("precio_total");
 
-    function calc() {
-      const b = parseFloat(bruto.value.replace(",", ".")) || 0;
-      const p = parseFloat(iva.value.replace(",", ".")) || 21;
-      const t = b * (1 + (p/100));
-      total.value = t.toFixed(2);
-    }
-    bruto && bruto.addEventListener("input", calc);
-    iva && iva.addEventListener("input", calc);
-    window.addEventListener("load", calc);
+      if (!bruto || !iva || !total) {
+        console.error("No se encontraron los inputs.");
+        return;
+      }
+
+      function calcular() {
+        // coge el valor, reemplaza coma por punto
+        const b = parseFloat((bruto.value || "0").replace(",", ".")) || 0;
+        const ivaAmt = b * 0.21;
+        const tot = b + ivaAmt;
+
+        // escribe con coma como separador decimal
+        iva.value   = ivaAmt.toFixed(2).replace(".", ",");
+        total.value = tot.toFixed(2).replace(".", ",");
+      }
+
+      // recalcula al escribir y al cargar
+      bruto.addEventListener("input", calcular);
+      window.addEventListener("load", calcular);
+    });
   </script>
+
 </body>
 </html>

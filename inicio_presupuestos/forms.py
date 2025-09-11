@@ -7,9 +7,6 @@ class PresupuestoForm(forms.Form):
     ciudad = forms.CharField(label="Ciudad", max_length=80)
     codigo_postal = forms.CharField(label="Código Postal", max_length=10)
 
-    # Bloque 2 (tabla materiales se gestiona con formset)
-    # ...
-
     # Bloque 4
     observaciones = forms.CharField(
         label="Observaciones",
@@ -18,9 +15,33 @@ class PresupuestoForm(forms.Form):
     )
 
     # Totales
-    precio_bruto = forms.DecimalField(label="Precio bruto (€)", max_digits=10, decimal_places=2)
-    iva = forms.DecimalField(label="IVA (21 %)", max_digits=5, decimal_places=2, initial=21)
-    precio_total = forms.DecimalField(label="PRECIO TOTAL (€)", max_digits=10, decimal_places=2, required=False)
+    precio_bruto = forms.DecimalField(
+        label="Precio bruto (€)", max_digits=10, decimal_places=2,
+        widget=forms.NumberInput(attrs={
+            "id": "precio_bruto",
+            "step": "0.01",
+            "inputmode": "decimal",
+            "autocomplete": "off",
+        })
+    )
+
+    # MOSTRAR con coma: usar TextInput (readonly)
+    iva = forms.DecimalField(
+        label="IVA (21 %)", max_digits=10, decimal_places=2, required=False,
+        widget=forms.TextInput(attrs={
+            "id": "iva",
+            "readonly": "readonly"
+        })
+    )
+
+    precio_total = forms.DecimalField(
+        label="PRECIO TOTAL (€)", max_digits=10, decimal_places=2, required=False,
+        widget=forms.TextInput(attrs={
+            "id": "precio_total",
+            "readonly": "readonly"
+        })
+    )
+
 
 class ItemForm(forms.Form):
     material = forms.CharField(label="Material", required=False, max_length=150)
