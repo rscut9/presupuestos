@@ -1,37 +1,43 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
-</head>
-<body>
-  <h1>Usuarios</h1>
-<table border="1" cellpadding="6">
-  <thead>
-    <tr>
-      {% for c in campos %}
-        <th>{{ c }}</th>
-      {% endfor %}
-    </tr>
-  </thead>
-  <tbody>
-    {% for fila in filas %}
-      <tr>
-        {% for v in fila %}
-          <td>{{ v }}</td>
-        {% endfor %}
-      </tr>
-    {% empty %}
-      <tr><td colspan="99">No hay usuarios</td></tr>
-    {% endfor %}
-  </tbody>
-</table>
-<br>
-<a href="{% url 'inicio_presupuestos' %}" 
-   style="display:inline-block; padding:10px 20px; background:#007bff; color:white; text-decoration:none; border-radius:5px;">
-   Volver al inicio
-</a>
+<h1>Datos MongoDB</h1>
 
-</body>
-</html>
+<form method="get" action="">
+  <label for="collection">Colección:</label>
+  <select id="collection" name="collection" onchange="this.form.submit()">
+    {% for c in colecciones %}
+      <option value="{{ c }}" {% if c == seleccion %}selected{% endif %}>{{ c }}</option>
+    {% endfor %}
+  </select>
+  <noscript><button type="submit">Ver</button></noscript>
+</form>
+
+{% if seleccion %}
+  <p>Mostrando <strong>{{ seleccion }}</strong> (máx. 500). Total en BD: {{ total }}.</p>
+
+  <div style="overflow:auto; max-width:100%;">
+    <table border="1" cellpadding="6" cellspacing="0">
+      <thead>
+        <tr>
+          {% for col in campos %}
+            <th>{{ col }}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for fila in filas %}
+          <tr>
+            {% for v in fila %}
+              <td>{{ v }}</td>
+            {% endfor %}
+          </tr>
+        {% empty %}
+          <tr><td colspan="99">No hay datos</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <p>No hay colecciones en la base de datos.</p>
+{% endif %}
+
+<br>
+<a href="{% url 'inicio_presupuestos' %}">Volver al inicio</a>

@@ -22,17 +22,13 @@
   }
   .block .content{ padding:10px; }
 
-  /* Datos del cliente como líneas simples */
-  .cliente-grid{
-    display:grid; grid-template-columns: 1fr 1fr; gap:12px;
-  }
+  .cliente-grid{ display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
   .field{ display:flex; flex-direction:column; }
   .field label{ font-weight:bold; margin-bottom:6px; }
   .field input, .field textarea{
     border:1px solid #cfcfcf; border-radius:6px; padding:8px; font-size:14px; width:100%;
   }
 
-  /* Tabla materiales/cantidad */
   table.items{
     width:100%; border-collapse:collapse; table-layout:fixed;
     border-left:2px solid var(--border); border-right:2px solid var(--border);
@@ -41,57 +37,43 @@
     background:#efefef; border-top:2px solid var(--border);
     border-bottom:2px solid var(--border); padding:8px; text-align:left; font-weight:bold;
   }
-  table.items td{
-    border-bottom:1px solid var(--soft); padding:6px 8px;
-  }
-  table.items input{
-    width:100%; border:0; outline:none; font-size:14px; padding:6px 4px;
-  }
+  table.items td{ border-bottom:1px solid var(--soft); padding:6px 8px; }
+  table.items input{ width:100%; border:0; outline:none; font-size:14px; padding:6px 4px; }
 
-  /* Observaciones */
   .obs textarea{ width:100%; height:90px; }
-
-  /* Totales (bloque pequeño alineado a la derecha) */
   .totales-wrap{ display:flex; justify-content:flex-end; }
-  table.totales{
-    width:370px; border-collapse:collapse; margin-top:8px;
-    border:2px solid var(--border);
-  }
-  table.totales td{
-    border-bottom:1px solid var(--soft); padding:8px 10px;
-  }
+  table.totales{ width:370px; border-collapse:collapse; margin-top:8px; border:2px solid var(--border); }
+  table.totales td{ border-bottom:1px solid var(--soft); padding:8px 10px; }
   table.totales tr:last-child td{ border-bottom:0; }
   table.totales td.label{ font-weight:bold; width:67%; }
-  table.totales input{
-    width:100%; border:0; outline:none; text-align:right; font-weight:bold;
-  }
+  table.totales input{ width:100%; border:0; outline:none; text-align:right; font-weight:bold; }
 
   .submitbar{ padding:14px; display:flex; justify-content:flex-end; }
-  .btn{
-    background:#2563eb; color:#fff; border:0; padding:10px 16px; border-radius:8px; cursor:pointer;
-    font-weight:bold;
-  }
+  .btn{ background:#2563eb; color:#fff; border:0; padding:10px 16px; border-radius:8px; cursor:pointer; font-weight:bold; }
   .msg{ padding:0 6px 12px 6px; color:#065f46; font-weight:bold; }
 </style>
 </head>
 <body>
-    <!-- MENÚ SUPERIOR -->
-
   <div class="sheet">
-    <nav style="
-        background:#111827;color:#fff;padding:12px 18px;
-         display:flex;align-items:center;gap:16px;border-bottom:1px solid #0b1220;">
+    <nav style="background:#111827;color:#fff;padding:12px 18px;display:flex;align-items:center;gap:16px;border-bottom:1px solid #0b1220;">
         <a href="{% url 'inicio_presupuestos' %}" style="color:#fff;text-decoration:none;font-weight:bold;">
             Presupuesto
         </a>
         <a href="{% url 'crear_material' %}" style="color:#c7d2fe;text-decoration:none;">Crear material</a>
         <a href="{% url 'datos' %}" style="color:#c7d2fe;text-decoration:none;">Datos</a>
     </nav>
+
+    <!-- Datalist con todos los materiales desde Mongo -->
+    <datalist id="lista-materiales">
+      {% for m in materiales %}
+        <option value="{{ m }}"></option>
+      {% endfor %}
+    </datalist>
+
     <form method="post">
       {% csrf_token %}
       <div class="wrap">
 
-        <!-- Datos del cliente -->
         <div class="block">
           <div class="title">Datos del cliente</div>
           <div class="content cliente-grid">
@@ -114,7 +96,6 @@
           </div>
         </div>
 
-        <!-- Descripción -->
         <div class="block">
           <div class="title">Descripción de la instalación</div>
           <div class="content">
@@ -124,7 +105,6 @@
           </div>
         </div>
 
-        <!-- Tabla Material / Cantidad -->
         <div class="block">
           <table class="items">
             <thead>
@@ -145,7 +125,6 @@
           </table>
         </div>
 
-        <!-- Observaciones -->
         <div class="block">
           <div class="title">Observaciones</div>
           <div class="content obs">
@@ -153,7 +132,6 @@
           </div>
         </div>
 
-        <!-- Totales alineados a la derecha -->
         <div class="totales-wrap">
           <table class="totales">
             <tr>
@@ -171,7 +149,6 @@
           </table>
         </div>
 
-
         {% if submitted %}
           <div class="msg">Enviado. Total calculado: {{ calc_total }} €</div>
         {% endif %}
@@ -183,34 +160,31 @@
     </form>
   </div>
 
-  <!-- Cálculo en vivo en el navegador -->
   <script>
+    // Conectar inputs de MATERIAL al datalist
     document.addEventListener("DOMContentLoaded", function () {
+      // Todos los inputs del formset cuyo name termina en "-material"
+      document.querySelectorAll('input[name$="-material"]').forEach(function (el) {
+        el.setAttribute("list", "lista-materiales");
+        el.addEventListener("focus", function () { el.select(); });
+      });
+
+      // Cálculo simple del total (como ya tenías)
       const bruto  = document.getElementById("precio_bruto");
       const iva    = document.getElementById("iva");
       const total  = document.getElementById("precio_total");
-
-      if (!bruto || !iva || !total) {
-        console.error("No se encontraron los inputs.");
-        return;
-      }
+      if (!bruto || !iva || !total) return;
 
       function calcular() {
-        // coge el valor, reemplaza coma por punto
         const b = parseFloat((bruto.value || "0").replace(",", ".")) || 0;
         const ivaAmt = b * 0.21;
         const tot = b + ivaAmt;
-
-        // escribe con coma como separador decimal
         iva.value   = ivaAmt.toFixed(2).replace(".", ",");
         total.value = tot.toFixed(2).replace(".", ",");
       }
-
-      // recalcula al escribir y al cargar
       bruto.addEventListener("input", calcular);
       window.addEventListener("load", calcular);
     });
   </script>
-
 </body>
 </html>
