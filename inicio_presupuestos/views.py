@@ -1,6 +1,7 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.forms import formset_factory
-from .forms import PresupuestoForm, ItemForm
+from django.contrib import messages
+from .forms import PresupuestoForm, ItemForm, MaterialForm
 from .mongo import get_db
 from bson.objectid import ObjectId
 from datetime import datetime
@@ -90,3 +91,33 @@ def datos(request):
         "total": total,
     }
     return render(request, "datos.html", ctx)
+
+def crear_material(request):
+    db = get_db()
+
+    if request.method == "POST":
+        form = MaterialForm(request.POST)
+        if form.is_valid():
+            nombre = form.cleaned_data["material"].strip()
+
+            # id autoincremental
+            last = db.materiales.find_one(
+                sort=[("id", -1)],
+                projection={"id": 1, "_id": 0}
+            )
+            next_id = (last["id"] + 1) if last else 1
+
+            fecha_str = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+
+            db.materiales.insert_one({
+                "id": next_id,
+                "material": nombre,
+                "fecha_creación": fecha_str,
+            })
+
+            messages.success(request, f"Material guardado con id {next_id}.")
+            return redirect("crear_material")
+    else:
+        form = MaterialForm()
+
+    return render(request, "crear_material.html", {"form": form})

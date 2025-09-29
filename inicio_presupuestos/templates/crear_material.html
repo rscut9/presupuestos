@@ -1,8 +1,43 @@
 <!doctype html>
 <html lang="es">
-<head><meta charset="utf-8"><title>Crear material</title></head>
+<head>
+  <meta charset="utf-8">
+  <title>Crear material</title>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;margin:0;background:#f6f7f9}
+    .wrap{max-width:640px;margin:32px auto;background:#fff;border:1px solid #e5e7eb;border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,.06)}
+    header{background:#111827;color:#fff;padding:12px 18px;display:flex;gap:16px;align-items:center;border-bottom:1px solid #0b1220}
+    header a{color:#c7d2fe;text-decoration:none}
+    .content{padding:18px}
+    form{display:flex;gap:12px;align-items:flex-end}
+    label{display:block;margin-bottom:6px;font-weight:bold}
+    input[type=text]{padding:10px;border:1px solid #cfd3d9;border-radius:8px;flex:1}
+    button{background:#2563eb;color:#fff;border:0;padding:10px 16px;border-radius:8px;cursor:pointer;font-weight:bold}
+    .msg{margin:12px 0;padding:10px;border-radius:6px;background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
+  </style>
+</head>
 <body>
-  <h1>materiales</h1>
-  <p><a href="{% url 'inicio_presupuestos' %}">Volver al inicio</a></p>
+  <div class="wrap">
+    <header>
+      <a href="{% url 'inicio_presupuestos' %}">Presupuesto</a>
+      <strong style="color:#fff;">Crear material</strong>
+      <a href="{% url 'datos' %}">Datos</a>
+    </header>
+
+    <div class="content">
+      {% if messages %}
+        {% for m in messages %}<div class="msg">{{ m }}</div>{% endfor %}
+      {% endif %}
+
+      <form method="post">
+        {% csrf_token %}
+        <div style="flex:1">
+          <label for="id_material">Material</label>
+          {{ form.material }}
+        </div>
+        <button type="submit">Guardar</button>
+      </form>
+    </div>
+  </div>
 </body>
 </html>

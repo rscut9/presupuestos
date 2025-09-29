@@ -42,7 +42,16 @@ class PresupuestoForm(forms.Form):
         })
     )
 
-
 class ItemForm(forms.Form):
     material = forms.CharField(label="Material", required=False, max_length=150)
     cantidad = forms.IntegerField(label="Cantidad", required=False, min_value=0)
+
+class MaterialForm(forms.Form):
+    material = forms.CharField(
+        label="Material",
+        max_length=200,
+        widget=forms.TextInput(attrs={
+            "placeholder": "Nombre del material",
+            "autofocus": "autofocus",
+        })
+    )
