@@ -11,7 +11,7 @@ class PresupuestoForm(forms.Form):
     observaciones = forms.CharField(
         label="Observaciones",
         widget=forms.Textarea(attrs={"rows": 3}),
-        initial="Garantía de mano de obra 6 meses y materiales 2 años"
+        initial="Garantía de mano de obra 6 meses y materiales 2 años."
     )
 
     # Totales

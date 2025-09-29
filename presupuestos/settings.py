@@ -73,6 +73,9 @@ WSGI_APPLICATION = 'presupuestos.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+MONGO_URL = "mongodb://127.0.0.1:27017/prueba"
+MONGO_DB_NAME = "prueba"
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',

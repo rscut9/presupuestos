@@ -1,8 +1,37 @@
-<!doctype html>
-<html lang="es">
-<head><meta charset="utf-8"><title>Datos</title></head>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
 <body>
-  <h1>datos</h1>
-  <p><a href="{% url 'inicio_presupuestos' %}">Volver al inicio</a></p>
+  <h1>Usuarios</h1>
+<table border="1" cellpadding="6">
+  <thead>
+    <tr>
+      {% for c in campos %}
+        <th>{{ c }}</th>
+      {% endfor %}
+    </tr>
+  </thead>
+  <tbody>
+    {% for fila in filas %}
+      <tr>
+        {% for v in fila %}
+          <td>{{ v }}</td>
+        {% endfor %}
+      </tr>
+    {% empty %}
+      <tr><td colspan="99">No hay usuarios</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+<br>
+<a href="{% url 'inicio_presupuestos' %}" 
+   style="display:inline-block; padding:10px 20px; background:#007bff; color:white; text-decoration:none; border-radius:5px;">
+   Volver al inicio
+</a>
+
 </body>
 </html>
