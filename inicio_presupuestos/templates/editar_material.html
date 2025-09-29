@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Editar material</title>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;margin:0;background:#f6f7f9}
+    .wrap{max-width:900px;margin:32px auto;background:#fff;border:1px solid #e5e7eb;border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,.06)}
+    header{background:#111827;color:#fff;padding:12px 18px;display:flex;gap:16px;align-items:center;border-bottom:1px solid #0b1220}
+    header a{color:#c7d2fe;text-decoration:none}
+    .content{padding:18px}
+    .msg{margin:12px 0;padding:10px;border-radius:6px;background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:8px;border-bottom:1px solid #e5e7eb;text-align:left;vertical-align:middle}
+    th{background:#f3f4f6}
+    .btn{background:#2563eb;color:#fff;border:0;padding:8px 12px;border-radius:6px;cursor:pointer;font-weight:bold}
+    .btn-sec{background:#6b7280;color:#fff;border:0;padding:8px 12px;border-radius:6px;cursor:pointer;font-weight:bold}
+    input[type=text]{padding:8px;border:1px solid #cfd3d9;border-radius:6px;width:100%}
+    .actions{display:flex;gap:8px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <a href="{% url 'inicio_presupuestos' %}">Presupuesto</a>
+      <a href="{% url 'crear_material' %}">Crear material</a>
+      <strong style="color:#fff;">Editar material</strong>
+      <a href="{% url 'datos' %}">Datos</a>
+    </header>
+
+    <div class="content">
+      {% if messages %}
+        {% for m in messages %}<div class="msg">{{ m }}</div>{% endfor %}
+      {% endif %}
+
+      <h2>Materiales</h2>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:160px;">Acción</th>
+            <th style="width:80px;">ID</th>
+            <th>Material</th>
+            <th style="width:180px;">Fecha creación</th>
+            <th style="width:200px;">Fecha actualización</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for m in materiales %}
+            <tr id="fila-{{ m.id }}">
+              <!-- Formulario por fila (vacío aquí); lo referenciamos con form="f-<id>" -->
+              <td class="actions">
+                <form id="f-{{ m.id }}" method="post">
+                  {% csrf_token %}
+                  <input type="hidden" name="id" value="{{ m.id }}">
+                </form>
+
+                {% if edit_id == m.id %}
+                  <button class="btn" type="submit" form="f-{{ m.id }}">Guardar</button>
+                  <a class="btn-sec" href="{% url 'editar_material' %}#fila-{{ m.id }}">Cancelar</a>
+                {% else %}
+                  <a class="btn" href="{% url 'editar_material' %}?edit={{ m.id }}#fila-{{ m.id }}">Editar</a>
+                {% endif %}
+              </td>
+
+              <td>{{ m.id }}</td>
+
+              <td>
+                {% if edit_id == m.id %}
+                  <input type="text" name="material" value="{{ m.material }}" autofocus form="f-{{ m.id }}">
+                {% else %}
+                  {{ m.material }}
+                {% endif %}
+              </td>
+
+              <td>{{ m.fecha_creación }}</td>
+              <td>{{ m.fecha_actualización }}</td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="5">No hay materiales.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</body>
+</html>

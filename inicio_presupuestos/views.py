@@ -43,18 +43,13 @@ def inicio_presupuestos(request):
         {"form": form, "formset": formset, "materiales": materiales},
     )
 
-
-def crear_material(request):
-    return render(request, "crear_material.html")
-
 def _to_serializable(v):
     if isinstance(v, ObjectId):
         return str(v)
     if isinstance(v, datetime):
         return v.isoformat()
     try:
-        json.dumps(v)
-        return v
+        json.dumps(v); return v
     except Exception:
         return str(v)
 
@@ -80,7 +75,18 @@ def datos(request):
         total = db[seleccion].count_documents({})
         docs = list(db[seleccion].find({}).limit(500))
         docs = _normalize_docs(docs)
-        campos = sorted({k for d in docs for k in d.keys()})
+
+        # Ocultar _id en todos los casos
+        for d in docs:
+            d.pop("_id", None)
+
+        if seleccion == "materiales":
+            base_order = ["id", "material", "fecha_creación", "fecha_actualización"]
+            extras = sorted({k for dd in docs for k in dd.keys()} - set(base_order))
+            campos = base_order + extras
+        else:
+            campos = sorted({k for d in docs for k in d.keys()})
+
         filas = [[d.get(c, "") for c in campos] for d in docs]
 
     ctx = {
@@ -121,3 +127,49 @@ def crear_material(request):
         form = MaterialForm()
 
     return render(request, "crear_material.html", {"form": form})
+
+def editar_material(request):
+
+    db = get_db()
+
+    # Guardar cambio
+    if request.method == "POST":
+        try:
+            mat_id = int(request.POST.get("id"))
+        except (TypeError, ValueError):
+            messages.error(request, "ID inválido.")
+            return redirect("editar_material")
+
+        nuevo_nombre = (request.POST.get("material") or "").strip()
+        if not nuevo_nombre:
+            messages.error(request, "El nombre del material no puede estar vacío.")
+            return redirect("editar_material")
+
+        fecha_upd = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+        db.materiales.update_one(
+            {"id": mat_id},
+            {"$set": {
+                "material": nuevo_nombre,
+                "fecha_actualización": fecha_upd
+            }}
+        )
+        messages.success(request, f"Material {mat_id} actualizado.")
+        return redirect("editar_material")
+
+    # Modo listado/edición
+    try:
+        edit_id = int(request.GET.get("edit")) if request.GET.get("edit") else None
+    except ValueError:
+        edit_id = None
+
+    materiales = list(
+        db.materiales.find(
+            {},
+            {"_id": 0, "id": 1, "material": 1, "fecha_creación": 1, "fecha_actualización": 1}
+        ).sort("id", 1)
+    )
+
+    return render(request, "editar_material.html", {
+        "materiales": materiales,
+        "edit_id": edit_id
+    })
